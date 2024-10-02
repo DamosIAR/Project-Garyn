@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -17,6 +18,8 @@ namespace ProjectGaryn
             base.AddInputActionsCallbacks();
 
             stateMachine.Player.Input.PlayerActions.Movement.canceled += OnMovementCanceled;
+
+            stateMachine.Player.Input.PlayerActions.Dash.started += OnDashStarted;
         }
 
 
@@ -25,6 +28,8 @@ namespace ProjectGaryn
             base.RemoveInputActionsCallbacks();
 
             stateMachine.Player.Input.PlayerActions.Movement.canceled -= OnMovementCanceled;
+
+            stateMachine.Player.Input.PlayerActions.Dash.started -= OnDashStarted;
         }
 
         protected virtual void OnMove()
@@ -45,6 +50,11 @@ namespace ProjectGaryn
         protected virtual void OnMovementCanceled(InputAction.CallbackContext context)
         {
             stateMachine.ChangeState(stateMachine.idlingState);
+        }
+
+        protected virtual void OnDashStarted(InputAction.CallbackContext context)
+        {
+            stateMachine.ChangeState(stateMachine.DashingState);
         }
 
         #endregion

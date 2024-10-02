@@ -218,6 +218,21 @@ namespace ProjectGaryn
             stateMachine.ReusableData.ShouldWalk = !stateMachine.ReusableData.ShouldWalk;
         }
 
+        public virtual void OnAnimationEnterEvent()
+        {
+
+        }
+
+        public virtual void OnAnimationExitEvent()
+        {
+
+        }
+
+        public virtual void OnAnimationTransitionEvent()
+        {
+
+        }
+
         #endregion
     }
 }
