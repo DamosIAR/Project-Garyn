@@ -90,6 +90,10 @@ namespace ProjectGaryn
 
         #region Input Method
 
+        protected override void OnMovementCanceled(InputAction.CallbackContext context)
+        {
+            stateMachine.ChangeState(stateMachine.HardStoppingState);
+        }
         private void OnSprintPerformed(InputAction.CallbackContext context)
         {
             keepSprinting = true;

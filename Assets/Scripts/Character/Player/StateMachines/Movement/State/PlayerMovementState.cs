@@ -23,7 +23,7 @@ namespace ProjectGaryn
 
         private void InitializeData()
         {
-            stateMachine.ReusableData.TimeToReachTargetRotation = movementData.BaseRotationData.TargetRotationReachTime;
+            SetBaseRotationData();
         }
 
         #region IStateMethods
@@ -88,7 +88,7 @@ namespace ProjectGaryn
 
         private float Rotate(Vector3 direction)
         {
-            float directionAngle = UpdateTaretRotation(direction);
+            float directionAngle = UpdateTargetRotation(direction);
 
             RotateTowardsTargetRotation();
 
@@ -132,6 +132,12 @@ namespace ProjectGaryn
 
 
         #region ReusableMethod
+
+        protected void SetBaseRotationData()
+        {
+            stateMachine.ReusableData.RotationData = movementData.BaseRotationData;
+            stateMachine.ReusableData.TimeToReachTargetRotation = stateMachine.ReusableData.RotationData.TargetRotationReachTime;
+        }
         protected Vector3 GetMovementInputDirection()
         {
             return new Vector3(stateMachine.ReusableData.MovementInput.x, 0f, stateMachine.ReusableData.MovementInput.y);
@@ -170,7 +176,7 @@ namespace ProjectGaryn
             stateMachine.Player.Rigidbody.MoveRotation(targetRotation);
         }
 
-        protected float UpdateTaretRotation(Vector3 direction, bool shouldConsiderCameraRotation = true)
+        protected float UpdateTargetRotation(Vector3 direction, bool shouldConsiderCameraRotation = true)
         {
             float directionAngle = GetDirectionAngle(direction);
 
@@ -209,6 +215,21 @@ namespace ProjectGaryn
 
         }
 
+        protected void DecelerateHorizontally()
+        {
+            Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+            stateMachine.Player.Rigidbody.AddForce(-playerHorizontalVelocity * stateMachine.ReusableData.MovementDecelerationForce, ForceMode.Acceleration);
+        }
+
+        protected bool IsMovingHorizontally(float minimumMagnitude = 0.1f)
+        {
+            Vector3 playerHorizontalVelocity = GetPlayerHorizontalVelocity();
+
+            Vector2 playerHorizontalMovement = new Vector2(playerHorizontalVelocity.x, playerHorizontalVelocity.z);
+
+            return playerHorizontalMovement.magnitude > minimumMagnitude;
+        }
         #endregion
 
         #region Input Method

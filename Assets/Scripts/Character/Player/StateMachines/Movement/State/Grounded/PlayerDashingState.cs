@@ -12,6 +12,7 @@ namespace ProjectGaryn
 
         private float startTime;
         private int consecutiveDashesUsed;
+        private bool shouldKeepRotating;
         public PlayerDashingState(PlayerMovementStateMachine playerMovementStateMachine) : base(playerMovementStateMachine)
         {
             dashData = movementData.DashData;
@@ -24,20 +25,42 @@ namespace ProjectGaryn
 
             stateMachine.ReusableData.MovementSpeedModifier = dashData.SpeedModifier;
 
+            stateMachine.ReusableData.RotationData = dashData.RotationData;
+
             AddForceOnTransitionFromStationaryState();
+
+            shouldKeepRotating = stateMachine.ReusableData.MovementInput != Vector2.zero;
 
             UpdateConsecutiveDashes();
 
             startTime = Time.time;
         }
 
+        public override void Exit()
+        {
+            base.Exit();
+
+            SetBaseRotationData();
+        }
+
+        public override void PhysicsUpdate()
+        {
+            base.PhysicsUpdate();
+
+            if(! shouldKeepRotating )
+            {
+                return;
+            }
+
+            RotateTowardsTargetRotation();
+        }
+
         public override void OnAnimationTransitionEvent()
         {
-            base.OnAnimationTransitionEvent();
 
             if(stateMachine.ReusableData.MovementInput == Vector2.zero )
             {
-                stateMachine.ChangeState(stateMachine.idlingState);
+                stateMachine.ChangeState(stateMachine.HardStoppingState);
                 return;
             }
             stateMachine.ChangeState(stateMachine.SprintingState);
@@ -56,6 +79,8 @@ namespace ProjectGaryn
             Vector3 characterRotationDirection = stateMachine.Player.transform.forward;
 
             characterRotationDirection.y = 0f;
+
+            UpdateTargetRotation(characterRotationDirection, false);
 
             stateMachine.Player.Rigidbody.velocity = characterRotationDirection * GetMovementSpeed();
         }
@@ -83,6 +108,22 @@ namespace ProjectGaryn
         }
         #endregion
 
+        #region ReusableMethod
+        protected override void AddInputActionsCallbacks()
+        {
+            base.AddInputActionsCallbacks();
+
+            stateMachine.Player.Input.PlayerActions.Movement.performed += OnMovementPerformed;
+        }
+
+        protected override void RemoveInputActionsCallbacks()
+        {
+            base.RemoveInputActionsCallbacks();
+
+            stateMachine.Player.Input.PlayerActions.Movement.performed -= OnMovementPerformed;
+        }
+        #endregion
+
         #region Input Methods
 
         protected override void OnMovementCanceled(InputAction.CallbackContext context)
@@ -92,6 +133,11 @@ namespace ProjectGaryn
         protected override void OnDashStarted(InputAction.CallbackContext context)
         {
 
+        }
+
+        private void OnMovementPerformed(InputAction.CallbackContext context)
+        {
+            shouldKeepRotating = true;
         }
         #endregion
     }
